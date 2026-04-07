@@ -9,7 +9,7 @@ def generate_prompt(tracks : list, anzahl_neuer_songs : int, grenze_gelöschter_
 
     Parameter:
 
-        Ziel-Vibe: {playlist_vibe}
+        Ziel-Vibe: {playlist_vibe} (Falls dieser Wert leer ist, ermittel den Vibe selbst)
 
         Max. zu löschende Songs: {grenze_gelöschter_songs}
 
@@ -19,7 +19,7 @@ def generate_prompt(tracks : list, anzahl_neuer_songs : int, grenze_gelöschter_
 
         Analyse: Analysiere die bestehenden Tracks hinsichtlich Genre, Tempo, Stimmung und Instrumentierung im Vergleich zum Ziel-Vibe.
 
-        Filterung: Identifiziere bis zu {grenze_gelöschter_songs} Tracks, die am stärksten vom Ziel-Vibe abweichen (z.B. zu schnell, zu traurig, falsches Genre). Lösche nur, wenn ein Song wirklich den Fluss stört.
+        Filterung: Identifiziere bis zu {grenze_gelöschter_songs} Tracks, die am stärksten vom Ziel-Vibe abweichen (z.B. zu schnell, zu traurig, falsches Genre). Lösche nur, wenn ein Song wirklich den Fluss stört. Wenn du nichts unstimmig findest, lösche nichts.
 
         Kuration: Wähle genau {anzahl_neuer_songs} neue Songs aus. Diese müssen den Vibe nicht nur treffen, sondern die Playlist abrunden (z. B. Übergänge verbessern oder eine Lücke im Spektrum füllen).
 

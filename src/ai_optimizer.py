@@ -7,11 +7,7 @@ def playlist_opt(prompt : str):
     client = genai.Client()
 
     response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=f"{prompt}",
+        model="gemini-2.5-flash",
+        contents= prompt,
     )
-
-    clean = response.text.strip().removeprefix("```json").removesuffix("``").strip()
-    data = json.loads(clean)
-
-    return data
+    return response
