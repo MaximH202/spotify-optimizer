@@ -3,12 +3,10 @@
 ### 1. Umgebungsvariablen
 Erstelle eine `.env` Datei im Root-Verzeichnis des Projekts mit folgenden Variablen:
 
-```env
 SPOTIPY_CLIENT_ID=deine_client_id
 SPOTIPY_CLIENT_SECRET=dein_client_secret
 SPOTIPY_REDIRECT_URI=dein_redirect_URI
 GEMINI_API_KEY=dein_api_key
-```
 
 ### 2. API Keys erhalten
 

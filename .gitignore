@@ -4,4 +4,4 @@ __pycache__/
 *.pyc
 .env
 .cache
-src\test.py
+src/test.py
