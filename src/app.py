@@ -57,20 +57,26 @@ elif st.button("Optimieren"):
             st.markdown(f"Es gab einen Fehler: {e}")
         
     
-    if "data" in st.session_state:
-        #Darstellung
-        data = st.session_state["data"]
-        st.subheader("Entfernte Songs")
-        st.dataframe(data["removed_songs"])
+if "data" in st.session_state:
+    #Darstellung
+    data = st.session_state.get("data")
+    st.subheader("Entfernte Songs")
+    st.dataframe(data["removed_songs"])
 
-        st.subheader("Hinzugefügte Songs")
-        st.dataframe(data["added_songs"])
+    st.subheader("Hinzugefügte Songs")
+    st.dataframe(data["added_songs"])
 
-        st.subheader("Deine neue Playlist")
-        st.dataframe(data["final_playlist"])
+    st.subheader("Deine neue Playlist")
+    st.dataframe(data["final_playlist"])
 
-        #Playlist bei Spotify hochladen
-        playlist_name = st.text_input("Der Name deiner neuen Playlist")
+    #Playlist bei Spotify hochladen
+    playlist_name = st.text_input("Der Name deiner neuen Playlist")
 
-        if st.button("Playlist bei Spotify hochladen"):
-            spotify_push_data(data, playlist_name, auth_manager)
+    if st.button("Playlist bei Spotify hochladen"):
+        with st.spinner("Uploading your playlist", show_time=False):
+            auth_manager = st.session_state.get("auth_manager")
+            if auth_manager:
+                spotify_push_data(data, playlist_name, auth_manager)
+                st.success("Playlist erfolgreich hochgeladen!")
+            else:
+                st.error("Nicht authentifiziert. Bitte zuerst mit Spotify verbinden.")

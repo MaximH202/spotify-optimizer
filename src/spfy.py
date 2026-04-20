@@ -28,27 +28,61 @@ def spotify_pull_data(playlist_id: str, auth_manager=None):
 
     return tracks
 
-def spotify_push_data(new_tracks: list, Playlist_Name: str, auth_manager=None):
+def spotify_push_data(data: dict, Playlist_Name: str, auth_manager=None):
     load_dotenv()
     if auth_manager is None:
         auth_manager = auth_management()
     sp = spotipy.Spotify(auth_manager=auth_manager)
-    #Neu erstellte Playlist
-    playlist = sp.current_user_playlist_create(Playlist_Name, public=True, collaborative=False, description='Your new Playlist, optimized by AI')
     
-    sp.playlist_add_items(playlist["id"], get_uri(new_tracks, auth_manager), position=None)
+    # Playlist-Name Standardwert falls leer
+    if not Playlist_Name:
+        Playlist_Name = "AI Optimized Playlist"
+        
+    try:
+        # Neu erstellte Playlist
+        playlist = sp.current_user_playlist_create(
+            Playlist_Name, 
+            public=True, 
+            collaborative=False, 
+            description='Your new Playlist, optimized by AI'
+        )
+        
+        uris = get_uri(data, auth_manager)
+        if uris:
+            # Spotify allows adding max 100 items at a time
+            sp.playlist_add_items(playlist["id"], uris, position=None)
+        return playlist
+    except spotipy.SpotifyException as e:
+        print(f"Spotify API Fehler: {e}")
+        raise e
 
-def get_uri(new_tracks: list, auth_manager=None):
+def get_uri(data: dict, auth_manager=None):
     load_dotenv()
     sp = spotipy.Spotify(auth_manager=auth_manager)
-    track_name = [song["track_name"] for song in new_tracks["final_playlist"]]
-    artist_name = [song["artist"] for song in new_tracks["final_playlist"]]
-    uri_list= []
+    
+    final_playlist = data.get("final_playlist", [])
+    uri_list = []
 
-    #URI der Lieder aus new_tracks ermitteln
-    for i in range(0, len(new_tracks["final_playlist"])):
-        q= f"remaster track:{track_name[i]} artist:{artist_name[i]}"
-        result = sp.search(q, limit=1, offset=0, type='track', market=None)
-        uri_list.append(result["tracks"]["items"][0]["uri"])
+    # URI der Lieder aus final_playlist ermitteln
+    for song in final_playlist:
+        track_name = song.get("track_name")
+        artist_name = song.get("artist")
+        
+        # Suche ohne "remaster" für bessere Ergebnisse
+        q = f"track:{track_name} artist:{artist_name}"
+        result = sp.search(q, limit=1, type='track')
+        
+        tracks = result.get("tracks", {}).get("items", [])
+        if tracks:
+            uri_list.append(tracks[0]["uri"])
+        else:
+            # Fallback: Suche nur nach Track-Name falls Künstler-Kombination nichts findet
+            q_fallback = f"track:{track_name}"
+            result_fallback = sp.search(q_fallback, limit=1, type='track')
+            tracks_fallback = result_fallback.get("tracks", {}).get("items", [])
+            if tracks_fallback:
+                uri_list.append(tracks_fallback[0]["uri"])
+            else:
+                print(f"Song nicht gefunden: {track_name} von {artist_name}")
 
     return uri_list
