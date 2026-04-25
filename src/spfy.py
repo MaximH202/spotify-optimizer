@@ -20,7 +20,7 @@ def spotify_pull_data(playlist_id: str, auth_manager=None):
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    results = sp.playlist_items(playlist_id)
+    results = sp.playlist_items(playlist_id, limit=75)
 
     for idx, item in enumerate(results['items']):
         track = item['item']

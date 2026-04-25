@@ -4,6 +4,45 @@ from ai_optimizer import playlist_opt
 import json
 import streamlit as st
 from google.genai.errors import ServerError
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Liste der benötigten Umgebungsvariablen
+required_keys = ["SPOTIPY_CLIENT_ID", "SPOTIPY_CLIENT_SECRET", "SPOTIPY_REDIRECT_URI", "GOOGLE_API_KEY"]
+
+# Überprüfen, ob Daten bereits vorhanden sind (in .env oder st.session_state)
+def get_missing_keys():
+    return [key for key in required_keys if not os.getenv(key) and key not in st.session_state]
+
+missing_keys = get_missing_keys()
+
+# Falls Daten fehlen -> Setup anzeigen
+if missing_keys:
+    st.title("⚙️ Setup")
+    st.info("Bitte gib deine API-Daten ein. Sobald du speicherst, verschwindet dieses Menü.")
+    
+    spotify_id = st.text_input("Spotify Client ID", value=st.session_state.get("SPOTIPY_CLIENT_ID", ""))
+    spotify_secret = st.text_input("Spotify Client Secret", type="password", value=st.session_state.get("SPOTIPY_CLIENT_SECRET", ""))
+    spotify_uri = st.text_input("Spotify Redirect URI", value=st.session_state.get("SPOTIPY_REDIRECT_URI", ""))
+    google_key = st.text_input("Google API Key", type="password", value=st.session_state.get("GOOGLE_API_KEY", ""))
+    
+    if st.button("Einstellungen speichern"):
+        if spotify_id and spotify_secret and spotify_uri and google_key:
+            st.session_state["SPOTIPY_CLIENT_ID"] = spotify_id
+            st.session_state["SPOTIPY_CLIENT_SECRET"] = spotify_secret
+            st.session_state["SPOTIPY_REDIRECT_URI"] = spotify_uri
+            st.session_state["GOOGLE_API_KEY"] = google_key
+            st.rerun()
+        else:
+            st.error("Bitte fülle alle Felder aus!")
+    st.stop()
+
+# Schlüssel in os.environ schreiben, damit andere Module (spfy.py, ai_optimizer.py) darauf zugreifen können
+for key in required_keys:
+    if key in st.session_state:
+        os.environ[key] = st.session_state[key]
 
 st.title("Spotify Playlist Optimizer")
 
@@ -60,11 +99,12 @@ elif st.button("Optimieren"):
 if "data" in st.session_state:
     #Darstellung
     data = st.session_state.get("data")
-    st.subheader("Entfernte Songs")
-    st.dataframe(data["removed_songs"])
-
-    st.subheader("Hinzugefügte Songs")
-    st.dataframe(data["added_songs"])
+    if grenze_gelöschter_songs > 0:
+        st.subheader("Entfernte Songs")
+        st.dataframe(data["removed_songs"])
+    if anzahl_neuer_songs > 0:
+        st.subheader("Hinzugefügte Songs")
+        st.dataframe(data["added_songs"])
 
     st.subheader("Deine neue Playlist")
     st.dataframe(data["final_playlist"])
@@ -80,3 +120,4 @@ if "data" in st.session_state:
                 st.success("Playlist erfolgreich hochgeladen!")
             else:
                 st.error("Nicht authentifiziert. Bitte zuerst mit Spotify verbinden.")
+
