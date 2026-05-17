@@ -5,7 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 # URL aus der Docker-Umgebungsvariable holen
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/spotify_optimizer")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    # Lokaler Fallback zu SQLite für einfaches Testen ohne Docker
+    DATABASE_URL = "sqlite:///spotify_optimizer.db"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -27,14 +31,19 @@ def init_db():
 #Optimierung in der Datenbank speichern
 def save_optimization(playlist_id, vibe, results):
     db = SessionLocal()
-    new_entry = OptimizationHistory(
-        playlist_id=playlist_id,
-        vibe=vibe,
-        results=results
-    )
-    db.add(new_entry)
-    db.commit()
-    db.close()
+    try:
+        new_entry = OptimizationHistory(
+            playlist_id=playlist_id,
+            vibe=vibe,
+            results=results
+        )
+        db.add(new_entry)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
+    finally:
+        db.close()
 
 #Alle Optimierungen aus der Datenbank abrufen
 def get_all_optimizations():

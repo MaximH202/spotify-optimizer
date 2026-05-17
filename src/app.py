@@ -82,22 +82,54 @@ for key in required_keys:
 
 st.title("Spotify Playlist Optimizer")
 
-#Eingaben und Spotify Connection
-response_url = st.text_input("Redirect-URL einfügen")
+# Spotify Auth initialisieren und Token prüfen
+auth_manager = auth_management()
+token_info = None
+try:
+    token_info = auth_manager.get_cached_token()
+except Exception:
+    pass
 
-
-if st.button("Spotify verbinden"):
-    #Spotify Auth
-    auth_manager= auth_management()
-    auth_url = auth_manager.get_authorize_url()
-    st.markdown(f"[Klick hier um dich zu verbinden und füge die Redirect-URL oben ein]({auth_url})")
+#Überprüfen, ob Spotify verbunden ist
+is_authenticated = False
+if token_info:
     st.session_state["auth_manager"] = auth_manager
+    is_authenticated = True
+
+if not is_authenticated:
+    st.info("🔑 Spotify-Verbindung erforderlich")
+    response_url = st.text_input("Redirect-URL einfügen")
+    
+    if st.button("Spotify verbinden"):
+        auth_url = auth_manager.get_authorize_url()
+        st.markdown(f"[Klick hier um dich zu verbinden und füge die Redirect-URL oben ein]({auth_url})")
+        st.session_state["auth_manager"] = auth_manager
+    
+    if response_url:
+        try:
+            code = auth_manager.parse_response_code(response_url)
+            auth_manager.get_access_token(code)
+            st.success("Erfolgreich mit Spotify verbunden!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Fehler bei der Authentifizierung: {e}")
+            st.stop()
+    st.stop()
+else:
+    st.success("✅ Erfolgreich mit Spotify verbunden.")
+    if st.button("Verbindung trennen"):
+        # Cache löschen und session_state zurücksetzen
+        if os.path.exists(".cache"):
+            os.remove(".cache")
+        if "auth_manager" in st.session_state:
+            del st.session_state["auth_manager"]
+        st.rerun()
 
 # Eingabefelder
 playlist_id = st.text_input("Playlist ID") #Test Playlist: "6TEtUXHUQkQAs2whkLzzlY"
 playlist_vibe = st.text_input("Playlist Vibe | Optional")
 anzahl_neuer_songs = st.number_input("Anzahl neuer Songs", min_value=1, max_value=20)
-grenze_gelöschter_songs = st.number_input("Anzahl gelöschter Songs", min_value=0, max_value=20)
+grenze_geloeschter_songs = st.number_input("Anzahl gelöschter Songs", min_value=0, max_value=20)
 
 #Session State für Daten
 if 'key' not in st.session_state:
@@ -107,22 +139,10 @@ if 'key' not in st.session_state:
 #Optimierung durchführen und Spotify API mit Push-Funktionalität
 if st.button("Optimieren"):
     auth_manager = st.session_state.get("auth_manager")
-    #Spotify Auth Check
-    if auth_manager and response_url:
-        try:
-            #Spotify Token holen
-            code = auth_manager.parse_response_code(response_url)
-            auth_manager.get_access_token(code)
-
-        except Exception as e:
-            st.error(f"Fehler bei der Authentifizierung: {e}")
-            if st.button("🔑 API-Daten korrigieren"):
-                st.session_state["show_setup"] = True
-                st.rerun()
-            st.stop()
+    
     #Überprüfen der Eingabefelder    
-    elif not auth_manager:
-        st.error("Bitte zuerst auf 'Spotify verbinden' klicken und die Redirect-URL einfügen.")
+    if not auth_manager:
+        st.error("Bitte zuerst mit Spotify verbinden.")
         st.stop()
     elif not playlist_id:
         st.error("Bitte gib eine Playlist ID ein.")
@@ -130,7 +150,7 @@ if st.button("Optimieren"):
     elif not anzahl_neuer_songs:
         st.error("Bitte gib die Anzahl neuer Songs ein.")
         st.stop()
-    elif not grenze_gelöschter_songs:
+    elif not grenze_geloeschter_songs:
         st.error("Bitte gib die Anzahl gelöschter Songs ein.")
         st.stop()
 
@@ -139,7 +159,7 @@ if st.button("Optimieren"):
         try:
             #Spotifydaten holen und AI Optimierung durchführen
             tracks = spotify_pull_data(playlist_id, auth_manager=auth_manager)
-            opt_prompt = generate_prompt(tracks, anzahl_neuer_songs, grenze_gelöschter_songs, playlist_vibe)
+            opt_prompt = generate_prompt(tracks, anzahl_neuer_songs, grenze_geloeschter_songs, playlist_vibe)
             data = playlist_opt(opt_prompt)
             
             #Speichern der Daten innerhalb der Session
@@ -152,21 +172,24 @@ if st.button("Optimieren"):
         
         except Exception as e:
             st.error(f"Es gab einen Fehler: {e}")
-            if st.button("🛠️ Konfiguration anpassen"):
-                st.session_state["show_setup"] = True
-                st.rerun()
         
 #Darstellung und Push der neuen Playlist
 if "data" in st.session_state:
     #Darstellung der Ergebnisse
-    st.info(f"Optimierung abgeschlossen. Hinzugefügte Songs: {anzahl_neuer_songs}. Gelöschte Songs: {grenze_gelöschter_songs}")
     data = st.session_state.get("data")
-    if grenze_gelöschter_songs > 0:
+    num_added = len(data.get("added_songs", []))
+    num_removed = len(data.get("removed_songs", []))
+    st.info(f"Optimierung abgeschlossen. Hinzugefügte Songs: {num_added}. Gelöschte Songs: {num_removed}")
+
+    #Entfernte Songs
+    if grenze_geloeschter_songs > 0:
         with st.expander("Entfernte Songs"):
             st.dataframe(data["removed_songs"])
+    #Hinzugefügte Songs
     if anzahl_neuer_songs > 0:
         with st.expander("Hinzugefügte Songs"):
             st.dataframe(data["added_songs"])
+    #Final Playlist
     with st.expander("Deine neue Playlist"):
         st.dataframe(data["final_playlist"])
 

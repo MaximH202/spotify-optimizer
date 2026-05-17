@@ -23,11 +23,19 @@ def spotify_pull_data(playlist_id: str, auth_manager=None):
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
     results = sp.playlist_items(playlist_id, limit=75)
-
+    #Liste der Songs aus Spotify abrufen und prüfen ob Daten vorhanden sind
     for idx, item in enumerate(results['items']):
-        track = item['item']
-        tracks.append({"idx": idx, "artist": track['artists'][0]['name'], "track_name": track['name']})
-
+        track = item.get('item')
+        if not track:
+            continue
+        artists = track.get('artists')
+        if not artists:
+            continue
+        tracks.append({
+            "idx": idx, 
+            "artist": artists[0]['name'], 
+            "track_name": track.get('name', 'Unbekannt')
+        })
     return tracks
 
 #Spotify Push Playlist
