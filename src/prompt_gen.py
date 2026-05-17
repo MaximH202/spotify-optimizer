@@ -1,3 +1,4 @@
+#Prompt Erstellung für LLM
 def generate_prompt(tracks : list, anzahl_neuer_songs : int, grenze_gelöschter_songs : int, playlist_vibe : str):
     prompt=f"""
 
@@ -23,11 +24,13 @@ def generate_prompt(tracks : list, anzahl_neuer_songs : int, grenze_gelöschter_
     - Achte penibel auf die korrekte Schreibweise von Artist und Track-Name (Spotify-Standard).
     - Füge keine Songs hinzu, die bereits in der Playlist sind.
 
-    Beachte, dass der Output ausschließlich als reines JSON erfolgt - kein Markdown, keine Erklärungen, kein Text außerhalb des JSONs. Dein Output besteht exakt aus diesen drei Listen:
+    Beachte, dass der Output ausschließlich als reines JSON erfolgt - kein Markdown, keine Erklärungen, kein Text außerhalb des JSONs. 
+    WICHTIG: Jedes Element in ALLEN drei Listen MUSS ein JSON-Objekt mit den Schlüsseln "artist" und "track_name" sein.
+    Dein Output besteht exakt aus diesen drei Listen:
     {{
-    "removed_songs": [...],
-    "added_songs": [...],
-    "final_playlist": [...]
+    "removed_songs": [{{"artist": "...", "track_name": "..."}}, ...],
+    "added_songs": [{{"artist": "...", "track_name": "..."}}, ...],
+    "final_playlist": [{{"artist": "...", "track_name": "..."}}, ...]
     }}
 
     Input-Daten:

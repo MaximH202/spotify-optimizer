@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15
+    container_name: spotify_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: spotify_optimizer
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: spotify_app
+    volumes:
+      - .:/app
+    ports:
+      - "8501:8501"
+
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/spotify_optimizer
+      - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
+      - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
+      - SPOTIPY_REDIRECT_URI=${SPOTIPY_REDIRECT_URI}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      - db
+volumes:
+  postgres_data:

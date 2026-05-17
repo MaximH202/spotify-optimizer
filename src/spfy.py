@@ -2,14 +2,16 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 
+#Auth_manager initialisieren
 def auth_management():
     load_dotenv()
     auth_manager = SpotifyOAuth(
-        scope="playlist-modify-public user-library-read",
+        scope="playlist-modify-public playlist-modify-private user-library-read",
         open_browser=False
     )
     return auth_manager
 
+#Spotify Auth und Datenabruf
 def spotify_pull_data(playlist_id: str, auth_manager=None):
     load_dotenv()
 
@@ -28,7 +30,8 @@ def spotify_pull_data(playlist_id: str, auth_manager=None):
 
     return tracks
 
-def spotify_push_data(data: dict, Playlist_Name: str, auth_manager=None):
+#Spotify Push Playlist
+def spotify_push_data_new_playlist(data: dict, Playlist_Name: str, auth_manager=None):
     load_dotenv()
     if auth_manager is None:
         auth_manager = auth_management()
@@ -49,13 +52,13 @@ def spotify_push_data(data: dict, Playlist_Name: str, auth_manager=None):
         
         uris = get_uri(data, auth_manager)
         if uris:
-            # Spotify allows adding max 100 items at a time
             sp.playlist_add_items(playlist["id"], uris, position=None)
         return playlist
     except spotipy.SpotifyException as e:
         print(f"Spotify API Fehler: {e}")
         raise e
 
+#Uri's der einzelnen Lieder ermitteln, da Spotify die ID des Songs und nicht den Song selbst benötigt
 def get_uri(data: dict, auth_manager=None):
     load_dotenv()
     sp = spotipy.Spotify(auth_manager=auth_manager)
@@ -86,3 +89,10 @@ def get_uri(data: dict, auth_manager=None):
                 print(f"Song nicht gefunden: {track_name} von {artist_name}")
 
     return uri_list
+
+#Playlist aktualisieren
+def update_playlist(playlist_id: str, data: dict, auth_manager=None):
+    load_dotenv()
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    uris = get_uri(data, auth_manager)
+    sp.playlist_replace_items(playlist_id, items=uris)

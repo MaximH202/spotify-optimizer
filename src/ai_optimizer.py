@@ -2,6 +2,7 @@ from google import genai
 from dotenv import load_dotenv
 import json
 
+#Initialisierung von Gemini und Spotify Playlist Optimierung
 def playlist_opt(prompt : str):
     load_dotenv()
     client = genai.Client()
