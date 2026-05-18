@@ -1,36 +1,19 @@
 # 🎵 Spotify Playlist Optimizer
 
-Der **Spotify Playlist Optimizer** ist eine moderne, interaktive Webanwendung, die mithilfe von künstlicher Intelligenz (Google Gemini) deine Spotify-Playlists analysiert, bereinigt und passend zu einer gewünschten Stimmung (Vibe) mit neuen Lizenztiteln erweitert. 
-
-Die Ergebnisse werden übersichtlich dargestellt, können in einer lokalen Datenbank (PostgreSQL/SQLite) historisiert werden und lassen sich direkt wieder auf Spotify exportieren – entweder als neue Playlist oder durch direkte Aktualisierung der bestehenden Playlist.
-
----
-
 ## Features
 
-- **🔑 Spotify-Authentifizierung:** Login per Redirect-URL
-- **🧠 KI (Google Gemini 3 / Gemini Flash):** Intelligente Optimierung deiner Playlist auf Basis von Genre, BPM und Stimmung. Die KI entfernt unpassende Songs (ohne die musikalische DNA der Playlist zu zerstören) und fügt passende, real existierende Titel hinzu.
-- **⚙️ Flexible Kriterien:** Bestimme selbst den Ziel-Vibe (oder lass ihn automatisch ermitteln), die Anzahl neuer Songs und das Limit für gelöschte Songs.
-- **📊 Interaktive UI:** Oberfläche mit Streamlit, Vorher-Nachher-Tabellen (Entfernte Songs, Hinzugefügte Songs, Finale Playlist) und ausklappbaren Elementen.
-- **🔄 Spotify-Synchronisierung:** 
+- ** Spotify-Authentifizierung:** Login per Redirect-URL
+- ** KI (Google Gemini 3 / Gemini Flash):** Intelligente Optimierung deiner Playlist auf Basis von Genre, BPM und Stimmung. Die KI entfernt unpassende Songs (ohne die musikalische DNA der Playlist zu zerstören) und fügt passende, real existierende Titel hinzu.
+- ** Interaktive UI:** Oberfläche mit Streamlit, Vorher-Nachher-Tabellen (Entfernte Songs, Hinzugefügte Songs, Finale Playlist) und ausklappbaren Elementen.
+- ** Spotify-Synchronisierung:** 
   - Speichere die optimierte Liste als **neue Playlist** auf deinem Spotify-Konto ab.
   - Überschreibe und aktualisiere die **bestehende Playlist** direkt auf Spotify.
-- **📅 Verlauf:** Jede Optimierung wird automatisch in einer Datenbank gespeichert. In der Sidebar kannst du den Verlauf aller vergangenen Optimierungen inklusive Datum, Vibe und Ergebnissen einsehen.
-- **🐳 Dockerized:** Vollständiges Container-Setup mit Docker Compose, inklusive automatischer Datenbank-Initialisierung.
+- ** Verlauf:** Jede Optimierung wird automatisch in einer Datenbank gespeichert. In der Sidebar kannst du den Verlauf aller vergangenen Optimierungen inklusive Datum, Vibe und Ergebnissen einsehen.
+- ** Dockerized:** Vollständiges Container-Setup mit Docker Compose, inklusive automatischer Datenbank-Initialisierung.
 
 ---
 
-## 🛠️ Technologien
-
-- **Frontend & UI:** [Streamlit](https://streamlit.io/)
-- **Spotify-API-Anbindung:** [Spotipy](https://spotipy.readthedocs.io/)
-- **KI-Modell:** [Google Gemini API](https://ai.google.dev/) via modernes `google-genai` SDK (`gemini-3-flash-preview`)
-- **Datenbank & ORM:** PostgreSQL (Docker) / SQLite (Lokaler Fallback) via [SQLAlchemy](https://www.sqlalchemy.org/)
-- **Containerisierung:** [Docker](https://www.docker.com/) & Docker Compose
-
----
-
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### 1. API-Keys besorgen
 
@@ -65,7 +48,7 @@ GEMINI_API_KEY=dein_gemini_api_key
 
 Du hast zwei Möglichkeiten, die Anwendung auszuführen:
 
-#### **Option A: Mit Docker & Docker Compose (Empfohlen)**
+#### **Option A: Mit Docker & Docker Compose**
 Diese Option startet die Streamlit-App sowie eine vollkonfigurierte PostgreSQL-Datenbank im Hintergrund.
 
 1. Stelle sicher, dass Docker installiert ist und läuft.
