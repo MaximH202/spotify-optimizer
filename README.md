@@ -2,15 +2,14 @@
 
 ## Features
 
-- ** Spotify-Authentifizierung:** Login per Redirect-URL
-- ** KI (Google Gemini 3 / Gemini Flash):** Intelligente Optimierung deiner Playlist auf Basis von Genre, BPM und Stimmung. Die KI entfernt unpassende Songs (ohne die musikalische DNA der Playlist zu zerstören) und fügt passende, real existierende Titel hinzu.
-- ** Interaktive UI:** Oberfläche mit Streamlit, Vorher-Nachher-Tabellen (Entfernte Songs, Hinzugefügte Songs, Finale Playlist) und ausklappbaren Elementen.
-- ** Spotify-Synchronisierung:** 
+- **Spotify-Authentifizierung:** Login per Redirect-URL
+- **KI (Google Gemini 3 / Gemini Flash):** Intelligente Optimierung deiner Playlist auf Basis von Genre, BPM und Stimmung. Die KI entfernt unpassende Songs (ohne die musikalische DNA der Playlist zu zerstören) und fügt passende, real existierende Titel hinzu.
+- **Interaktive UI:** Oberfläche mit Streamlit, Vorher-Nachher-Tabellen (Entfernte Songs, Hinzugefügte Songs, Finale Playlist) und ausklappbaren Elementen.
+- **Spotify-Synchronisierung:** 
   - Speichere die optimierte Liste als **neue Playlist** auf deinem Spotify-Konto ab.
   - Überschreibe und aktualisiere die **bestehende Playlist** direkt auf Spotify.
-- ** Verlauf:** Jede Optimierung wird automatisch in einer Datenbank gespeichert. In der Sidebar kannst du den Verlauf aller vergangenen Optimierungen inklusive Datum, Vibe und Ergebnissen einsehen.
-- ** Dockerized:** Vollständiges Container-Setup mit Docker Compose, inklusive automatischer Datenbank-Initialisierung.
-
+- **Verlauf:** Jede Optimierung wird automatisch in einer Datenbank gespeichert. In der Sidebar kannst du den Verlauf aller vergangenen Optimierungen inklusive Datum, Vibe und Ergebnissen einsehen.
+- **Dockerized:** Vollständiges Container-Setup mit Docker Compose, inklusive automatischer Datenbank-Initialisierung.
 ---
 
 ## Setup & Installation
