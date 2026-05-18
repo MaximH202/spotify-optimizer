@@ -109,10 +109,3 @@ Spotify-Optimizer/
 ├── .gitignore            # Git-Ausschlussregeln (ignoriert .env, .cache etc.)
 └── README.md             # Diese Dokumentation
 ```
-
----
-
-## 🛡️ Sicherheitshinweis
-
-- Teile niemals deine `.env`-Datei oder die `.cache`-Dateien
-- Beide Dateien sind bereits in der `.gitignore` eingetragen und werden nicht in dein Git-Repository übertragen.
