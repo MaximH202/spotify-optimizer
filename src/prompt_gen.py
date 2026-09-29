@@ -25,12 +25,11 @@ def generate_prompt(tracks : list, anzahl_neuer_songs : int, grenze_gelöschter_
     - Füge keine Songs hinzu, die bereits in der Playlist sind.
 
     Beachte, dass der Output ausschließlich als reines JSON erfolgt - kein Markdown, keine Erklärungen, kein Text außerhalb des JSONs. 
-    WICHTIG: Jedes Element in ALLEN drei Listen MUSS ein JSON-Objekt mit den Schlüsseln "artist" und "track_name" sein.
-    Dein Output besteht exakt aus diesen drei Listen:
+    WICHTIG: Jedes Element in BEIDEN Listen MUSS ein JSON-Objekt sein. Bei "removed_songs" übernimmst du "idx", "artist" und "track_name" exakt aus den Input-Daten.
+    Dein Output besteht exakt aus diesen zwei Listen:
     {{
-    "removed_songs": [{{"artist": "...", "track_name": "..."}}, ...],
-    "added_songs": [{{"artist": "...", "track_name": "..."}}, ...],
-    "final_playlist": [{{"artist": "...", "track_name": "..."}}, ...]
+    "removed_songs": [{{"idx": 0, "artist": "...", "track_name": "..."}}, ...],
+    "added_songs": [{{"artist": "...", "track_name": "..."}}, ...]
     }}
 
     Input-Daten:

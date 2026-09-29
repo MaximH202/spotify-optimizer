@@ -19,7 +19,7 @@
 #### **Spotify API:**
 1. Gehe zum [Spotify for Developers Dashboard](https://developer.spotify.com/dashboard).
 2. Erstelle eine neue App.
-3. Gib als **Redirect URI** beispielsweise `http://localhost:8501/` oder `http://localhost:8080/` in den App-Einstellungen an.
+3. Gib als **Redirect URI** beispielsweise `http://127.0.0.1:8501/` in den App-Einstellungen an (Spotify akzeptiert `localhost` nicht mehr, nur die Loopback-Adresse `127.0.0.1`).
 4. Kopiere die `Client ID`, das `Client Secret` und die `Redirect URI`.
 
 #### **Gemini API:**
@@ -40,6 +40,8 @@ GEMINI_API_KEY=dein_gemini_api_key
 ```
 
 *Hinweis: Wenn diese Variablen in der `.env`-Datei gesetzt sind, lädt die App sie automatisch. Alternativ können sie beim ersten Start auch direkt in der Setup-Oberfläche der App eingegeben und im Session-State gespeichert werden.*
+
+*Hinweis: Der Spotify-Login gilt pro Browser-Session. Nach einem Neuladen der Seite musst du dich erneut verbinden.*
 
 ---
 

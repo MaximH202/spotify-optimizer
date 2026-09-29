@@ -11,6 +11,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d spotify_optimizer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     build: .
@@ -26,7 +31,9 @@ services:
       - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
       - SPOTIPY_REDIRECT_URI=${SPOTIPY_REDIRECT_URI}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TZ=${TZ:-Europe/Berlin}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 volumes:
   postgres_data:

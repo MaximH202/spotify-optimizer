@@ -5,3 +5,5 @@ __pycache__/
 .env
 .cache
 src/test.py
+*.db
+.cache*

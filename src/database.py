@@ -1,8 +1,7 @@
 import os
 from sqlalchemy import create_engine, Column, Integer, String, JSON, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from sqlalchemy.orm import sessionmaker, declarative_base
+from datetime import datetime, timezone
 
 # URL aus der Docker-Umgebungsvariable holen
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -11,9 +10,13 @@ if not DATABASE_URL:
     # Lokaler Fallback zu SQLite für einfaches Testen ohne Docker
     DATABASE_URL = "sqlite:///spotify_optimizer.db"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+def _utcnow():
+    # Naiver UTC-Zeitstempel (Spalte ist ohne Zeitzone)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 #Modell für die Historie der Optimierungen in der Datenbank
 class OptimizationHistory(Base):
@@ -22,7 +25,7 @@ class OptimizationHistory(Base):
     playlist_id = Column(String)
     vibe = Column(String)
     results = Column(JSON)  # Hier speichern wir die added/removed songs
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=_utcnow)
 
 # Datenbank initialisieren
 def init_db():
@@ -39,15 +42,16 @@ def save_optimization(playlist_id, vibe, results):
         )
         db.add(new_entry)
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
-        raise e
+        raise
     finally:
         db.close()
 
-#Alle Optimierungen aus der Datenbank abrufen
+#Alle Optimierungen aus der Datenbank abrufen (neueste zuerst)
 def get_all_optimizations():
     db = SessionLocal()
-    optimizations = db.query(OptimizationHistory).all()
-    db.close()
-    return optimizations
+    try:
+        return db.query(OptimizationHistory).order_by(OptimizationHistory.timestamp.desc()).all()
+    finally:
+        db.close()
