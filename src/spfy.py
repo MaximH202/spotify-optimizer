@@ -1,3 +1,4 @@
+import re
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
@@ -15,6 +16,16 @@ def auth_management(client_id: str, client_secret: str, redirect_uri: str, cache
         cache_handler=cache_handler,
     )
     return auth_manager
+
+#Playlist ID aus ID, Link (open.spotify.com/...) oder URI (spotify:playlist:...) ermitteln
+def parse_playlist_id(value: str):
+    value = (value or "").strip()
+    match = re.search(r"playlist[/:]([A-Za-z0-9]{22})", value)
+    if match:
+        return match.group(1)
+    if re.fullmatch(r"[A-Za-z0-9]{22}", value):
+        return value
+    return None
 
 #Spotify Datenabruf (alle Seiten der Playlist)
 def spotify_pull_data(playlist_id: str, auth_manager):

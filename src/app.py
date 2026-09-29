@@ -1,4 +1,4 @@
-from spfy import spotify_pull_data, spotify_push_data_new_playlist, auth_management, update_playlist, build_final_playlist
+from spfy import spotify_pull_data, spotify_push_data_new_playlist, auth_management, update_playlist, build_final_playlist, parse_playlist_id
 from prompt_gen import generate_prompt
 from ai_optimizer import playlist_opt
 from database import init_db, save_optimization, get_all_optimizations
@@ -119,7 +119,7 @@ auth_manager = auth_management(
 )
 token_info = None
 try:
-    token_info = auth_manager.get_cached_token()
+    token_info = auth_manager.validate_token(auth_manager.cache_handler.get_cached_token())
 except Exception:
     pass
 
@@ -147,7 +147,8 @@ else:
         st.rerun()
 
 # Eingabefelder
-playlist_id = st.text_input("Playlist ID").strip() #Test Playlist: "6TEtUXHUQkQAs2whkLzzlY"
+playlist_input = st.text_input("Playlist-Link oder ID", placeholder="https://open.spotify.com/playlist/...") #Test Playlist: "6TEtUXHUQkQAs2whkLzzlY"
+playlist_id = parse_playlist_id(playlist_input)
 playlist_vibe = st.text_input("Playlist Vibe | Optional")
 anzahl_neuer_songs = st.number_input("Anzahl neuer Songs", min_value=1, max_value=20)
 grenze_geloeschter_songs = st.number_input("Anzahl gelöschter Songs", min_value=0, max_value=20)
@@ -156,8 +157,11 @@ grenze_geloeschter_songs = st.number_input("Anzahl gelöschter Songs", min_value
 #Optimierung durchführen
 if st.button("Optimieren"):
     #Überprüfen der Eingabefelder
+    if not playlist_input.strip():
+        st.error("Bitte gib einen Playlist-Link oder eine Playlist ID ein.")
+        st.stop()
     if not playlist_id:
-        st.error("Bitte gib eine Playlist ID ein.")
+        st.error("Ungültiger Playlist-Link. Erwartet z.B. https://open.spotify.com/playlist/... oder eine 22-stellige ID.")
         st.stop()
 
     # Altes Ergebnis verwerfen, damit bei Fehlern nichts Veraltetes angezeigt/gepusht wird
