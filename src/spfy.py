@@ -1,6 +1,33 @@
 import spotipy
+# pyrefly: ignore [missing-import]
 from spotipy.oauth2 import SpotifyOAuth
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
+import re
+
+def extract_playlist_id(playlist_input: str) -> str:
+    """Extrahiert eine saubere Spotify-Playlist-ID aus einer ID, URI oder URL."""
+    if not playlist_input:
+        return ""
+    clean_input = playlist_input.strip()
+
+    # Fall: si= Parameter versehentlich kopiert
+    if clean_input.startswith("?si=") or clean_input.startswith("si="):
+        clean_input = clean_input.split("=")[-1].strip()
+
+    # Spotify URL prüfen (z. B. https://open.spotify.com/playlist/6TEtUXHUQkQAs2whkLzzlY?si=...)
+    url_match = re.search(r"open\.spotify\.com(?:/intl-[a-z]{2})?/playlist/([a-zA-Z0-9]+)", clean_input)
+    if url_match:
+        return url_match.group(1)
+
+    # Spotify URI prüfen (z. B. spotify:playlist:6TEtUXHUQkQAs2whkLzzlY)
+    uri_match = re.search(r"spotify:playlist:([a-zA-Z0-9]+)", clean_input)
+    if uri_match:
+        return uri_match.group(1)
+
+    # (Der Check auf 16-stellige Hex-Strings wurde entfernt, da manche echte Playlists 16-stellige IDs haben)
+
+    return clean_input
 
 #Auth_manager initialisieren
 def auth_management():
@@ -15,6 +42,7 @@ def auth_management():
 def spotify_pull_data(playlist_id: str, auth_manager=None):
     load_dotenv()
 
+    playlist_id = extract_playlist_id(playlist_id)
     tracks = []
 
     if auth_manager is None:
@@ -22,20 +50,22 @@ def spotify_pull_data(playlist_id: str, auth_manager=None):
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    results = sp.playlist_items(playlist_id, limit=75)
+    results = sp.playlist_items(playlist_id, limit = 100)
+    while results:
     #Liste der Songs aus Spotify abrufen und prüfen ob Daten vorhanden sind
-    for idx, item in enumerate(results['items']):
-        track = item.get('item')
-        if not track:
-            continue
-        artists = track.get('artists')
-        if not artists:
-            continue
-        tracks.append({
-            "idx": idx, 
-            "artist": artists[0]['name'], 
-            "track_name": track.get('name', 'Unbekannt')
-        })
+        for item in results.get('items', []):
+            track = item.get('track') or item.get('item')
+            if not track:
+                continue
+            artists = track.get('artists')
+            if not artists:
+                continue
+            tracks.append({
+                "idx": len(tracks), 
+                "artist": artists[0]['name'], 
+                "track_name": track.get('name', 'Unbekannt')
+            })
+        results = sp.next(results) if results.get('next') else None
     return tracks
 
 #Spotify Push Playlist
@@ -101,6 +131,7 @@ def get_uri(data: dict, auth_manager=None):
 #Playlist aktualisieren
 def update_playlist(playlist_id: str, data: dict, auth_manager=None):
     load_dotenv()
+    playlist_id = extract_playlist_id(playlist_id)
     sp = spotipy.Spotify(auth_manager=auth_manager)
     uris = get_uri(data, auth_manager)
     sp.playlist_replace_items(playlist_id, items=uris)

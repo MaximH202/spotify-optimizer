@@ -1,4 +1,4 @@
-from spfy import spotify_pull_data, spotify_push_data_new_playlist, auth_management, update_playlist
+from spfy import spotify_pull_data, spotify_push_data_new_playlist, auth_management, update_playlist, extract_playlist_id
 from prompt_gen import generate_prompt
 from ai_optimizer import playlist_opt
 import json
@@ -126,7 +126,11 @@ else:
         st.rerun()
 
 # Eingabefelder
-playlist_id = st.text_input("Playlist ID") #Test Playlist: "6TEtUXHUQkQAs2whkLzzlY"
+playlist_id_input = st.text_input(
+    "Playlist ID oder Spotify-Link",
+    placeholder="z. B. 6TEtUXHUQkQAs2whkLzzlY oder https://open.spotify.com/playlist/...",
+    help="Du kannst die 22-stellige Playlist-ID oder den kompletten Spotify-Link einfügen."
+) #Test Playlist: "6TEtUXHUQkQAs2whkLzzlY"
 playlist_vibe = st.text_input("Playlist Vibe | Optional")
 anzahl_neuer_songs = st.number_input("Anzahl neuer Songs", min_value=1, max_value=20)
 grenze_geloeschter_songs = st.number_input("Anzahl gelöschter Songs", min_value=0, max_value=20)
@@ -144,28 +148,34 @@ if st.button("Optimieren"):
     if not auth_manager:
         st.error("Bitte zuerst mit Spotify verbinden.")
         st.stop()
-    elif not playlist_id:
-        st.error("Bitte gib eine Playlist ID ein.")
+    elif not playlist_id_input:
+        st.error("Bitte gib eine Playlist ID oder einen Spotify-Link ein.")
         st.stop()
-    elif not anzahl_neuer_songs:
+    elif anzahl_neuer_songs is None:
         st.error("Bitte gib die Anzahl neuer Songs ein.")
         st.stop()
-    elif not grenze_geloeschter_songs:
+    elif grenze_geloeschter_songs is None:
         st.error("Bitte gib die Anzahl gelöschter Songs ein.")
+        st.stop()
+
+    try:
+        clean_playlist_id = extract_playlist_id(playlist_id_input)
+    except ValueError as val_err:
+        st.error(str(val_err))
         st.stop()
 
     #Prompt Generierung und AI-Optimierung
     with st.spinner("Optimizing your playlist", show_time=False):
         try:
             #Spotifydaten holen und AI Optimierung durchführen
-            tracks = spotify_pull_data(playlist_id, auth_manager=auth_manager)
+            tracks = spotify_pull_data(clean_playlist_id, auth_manager=auth_manager)
             opt_prompt = generate_prompt(tracks, anzahl_neuer_songs, grenze_geloeschter_songs, playlist_vibe)
             data = playlist_opt(opt_prompt)
             
             #Speichern der Daten innerhalb der Session
             st.session_state["data"] = data
             #Speichern der Daten in der Datenbank
-            save_optimization(playlist_id, playlist_vibe, data)
+            save_optimization(clean_playlist_id, playlist_vibe, data)
         except ServerError as sverror:
             print("Die server sind derzeit überlastet")
             st.markdown("Die server sind derzeit überlastet, versuche es zu einem späteren Zeitpunkt erneut")
@@ -212,11 +222,12 @@ if "data" in st.session_state:
     # Update der bestehenden Playlist
     st.write("Möchtest du die bestehende Playlist direkt aktualisieren?")
     if st.button("🔄 Bestehende Playlist aktualisieren"):
-        if playlist_id:
+        if playlist_id_input:
             with st.spinner("Aktualisiere Playlist...", show_time=False):
                 auth_manager = st.session_state.get("auth_manager")
                 try:
-                    update_playlist(playlist_id, data, auth_manager)
+                    clean_id = extract_playlist_id(playlist_id_input)
+                    update_playlist(clean_id, data, auth_manager)
                     st.success("Playlist erfolgreich aktualisiert!")
                 except Exception as e:
                     st.error(f"Fehler beim Update: {e}")
